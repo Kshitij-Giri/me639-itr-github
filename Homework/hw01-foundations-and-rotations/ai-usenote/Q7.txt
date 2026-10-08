@@ -1,0 +1,30 @@
+Question 7 - AI Use Note
+
+Tool used: ChatGPT
+
+What I asked it:
+
+1. I first asked ChatGPT to explain the overall structure of the provided rotation sandbox code, including what the different TODOs were asking me to do, where I needed to make changes, and how the existing code worked.
+
+2. For the compose_sequence TODO, I asked ChatGPT how to implement the current-frame and fixed-frame cases in the given Python structure. I already understood from the class concepts that current-frame composition should use post-multiplication and fixed-frame composition should use pre-multiplication. I mainly asked for help with the Python syntax and for an explanation of the sequence variable, the loop, and how the axis, angle, and frame values are obtained from each entry.
+
+3. I also asked ChatGPT to explain how the same rotation sequence could be used to demonstrate the difference between current-frame and fixed-frame rotation. This helped me understand how to set up the rotation_sequence for the required demonstration.
+
+4. For the optional animate_sequence TODO, I asked ChatGPT how I could animate each rotation step by step instead of only showing the final orientation. The idea of animating the sequence was my own, but I was new to the MuJoCo syntax used in the starter code, so I used ChatGPT to understand how to structure the animation loop, apply small rotation steps, update the body orientation, and refresh the MuJoCo viewer.
+
+5. While running the code, I was getting warnings in the terminal output. I asked ChatGPT to identify what the warnings meant and how I could filter the irrelevant warnings so that the program output would be cleaner and easier to view.
+
+How I used the output (and what I changed/verified myself):
+
+1. I used ChatGPT’s explanation of the code structure to understand where and why I needed to make changes. I then applied the concepts from class myself while editing the code.
+
+2. For compose_sequence, I used the suggested Python loop structure and adapted it to my code. I used my understanding of the rotation composition rules to implement the current-frame and fixed-frame cases. I then ran the code and verified that it produced the expected rotation matrix.
+
+3. I used the explanation of the rotation sequence to set up my own test sequence and used the code to demonstrate the difference between current-frame and fixed-frame composition.
+
+4. For animate_sequence, I used the suggested structure and MuJoCo syntax to implement the function. The overall idea of animating the rotations step by step was my own; ChatGPT mainly helped me with the code structure and MuJoCo commands needed to carry it out. I ran the program myself and verified that the rotations were applied step by step and that the final orientation was displayed correctly.
+
+5. I used ChatGPT’s suggestion to add warning filtering to the code for the specific irrelevant warning. I then ran the program myself and verified that the warning was no longer appearing and that the output was cleaner.
+
+I did not use ChatGPT to decide the underlying rotation concepts or replace the class reasoning. I used it mainly to understand the existing code, clarify Python syntax and loop structure, and help with the MuJoCo implementation details. I wrote, ran, and verified the final changes myself.
+

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mujoco model="simple_quadrotor">
+
+    <compiler angle="radian"/>
+
+    <option
+        timestep="0.01"
+        gravity="0 0 -9.81"
+    />
+
+    <default>
+
+        <joint
+            damping="0.1"
+            armature="0.01"
+        />
+
+        <geom
+            friction="0.8 0.1 0.1"
+        />
+
+    </default>
+
+    <asset>
+
+        <material
+            name="body_mat"
+            rgba="0.15 0.25 0.8 1"
+        />
+
+        <material
+            name="rod_mat"
+            rgba="0.2 0.2 0.2 1"
+        />
+
+        <material
+            name="rotor_mat"
+            rgba="0.1 0.8 0.3 0.8"
+        />
+
+    </asset>
+
+    <worldbody>
+
+        <body
+            name="quadrotor"
+            pos="0 0 0.05"
+        >
+
+            <freejoint name="root"/>
+
+            <!-- Central body -->
+            <geom
+                name="body"
+                type="box"
+                size="0.12 0.08 0.035"
+                mass="0.5"
+                material="body_mat"
+            />
+
+            <!-- X direction rod -->
+            <geom
+                name="rod_x"
+                type="box"
+                size="0.55 0.025 0.025"
+                mass="0.08"
+                material="rod_mat"
+            />
+
+            <!-- Y direction rod -->
+            <geom
+                name="rod_y"
+                type="box"
+                size="0.025 0.55 0.025"
+                mass="0.08"
+                material="rod_mat"
+            />
+
+            <!-- Rotor 1 -->
+            <geom
+                name="rotor1"
+                type="cylinder"
+                pos="0.55 0 0.04"
+                size="0.12 0.01"
+                mass="0.02"
+                material="rotor_mat"
+                contype="0"
+                conaffinity="0"
+            />
+
+            <!-- Rotor 2 -->
+            <geom
+                name="rotor2"
+                type="cylinder"
+                pos="0 0.55 0.04"
+                size="0.12 0.01"
+                mass="0.02"
+                material="rotor_mat"
+                contype="0"
+                conaffinity="0"
+            />
+
+            <!-- Rotor 3 -->
+            <geom
+                name="rotor3"
+                type="cylinder"
+                pos="-0.55 0 0.04"
+                size="0.12 0.01"
+                mass="0.02"
+                material="rotor_mat"
+                contype="0"
+                conaffinity="0"
+            />
+
+            <!-- Rotor 4 -->
+            <geom
+                name="rotor4"
+                type="cylinder"
+                pos="0 -0.55 0.04"
+                size="0.12 0.01"
+                mass="0.02"
+                material="rotor_mat"
+                contype="0"
+                conaffinity="0"
+            />
+
+            <!-- Motor thrust sites -->
+
+            <site
+                name="motor1"
+                pos="0.55 0 0.04"
+                size="0.02"
+            />
+
+            <site
+                name="motor2"
+                pos="0 0.55 0.04"
+                size="0.02"
+            />
+
+            <site
+                name="motor3"
+                pos="-0.55 0 0.04"
+                size="0.02"
+            />
+
+            <site
+                name="motor4"
+                pos="0 -0.55 0.04"
+                size="0.02"
+            />
+
+        </body>
+
+    </worldbody>
+
+    <actuator>
+
+        <motor
+            name="thrust1"
+            site="motor1"
+            gear="0 0 1 0 0 0"
+            ctrlrange="0 5"
+            ctrllimited="true"
+        />
+
+        <motor
+            name="thrust2"
+            site="motor2"
+            gear="0 0 1 0 0 0"
+            ctrlrange="0 5"
+            ctrllimited="true"
+        />
+
+        <motor
+            name="thrust3"
+            site="motor3"
+            gear="0 0 1 0 0 0"
+            ctrlrange="0 5"
+            ctrllimited="true"
+        />
+
+        <motor
+            name="thrust4"
+            site="motor4"
+            gear="0 0 1 0 0 0"
+            ctrlrange="0 5"
+            ctrllimited="true"
+        />
+
+    </actuator>
+
+</mujoco>

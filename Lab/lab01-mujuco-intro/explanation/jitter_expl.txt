@@ -1,0 +1,18 @@
+1. The rotation matrix represents the orientation of the robot’s body frame
+with respect to the world frame. Ideally, if the robot is perfectly aligned,
+we expect values like 1 on the diagonal and 0 elsewhere. However, MuJoCo 
+continuously solves the physics numerically at every timestep, so tiny forces
+and torques from contact, friction, inertia, actuators, and numerical
+integration can cause very small changes in orientation.
+
+2. Because the orientation changes by extremely small amounts, the rotation
+matrix entries also change slightly around their ideal values. For example, a
+value expected to be 0 may appear as 0.001 or -0.001. This does not necessarily
+mean the robot has significantly rotated; it usually represents a very small
+physical/numerical deviation.
+
+3. The apparent jitter is also amplified by rounding. When displaying only three
+decimal places, values such as -0.0003 and +0.0003 can appear as -0.000 and
+0.000. Thus, the jitter is mainly a result of MuJoCo's numerical physics
+simulation and tiny physical deviations, not random noise being added to the
+rotation matrix.

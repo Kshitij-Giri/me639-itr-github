@@ -1,0 +1,33 @@
+Question 8 - AI Use Note
+
+Tool used: ChatGPT
+
+What I asked it:
+
+1. I first asked ChatGPT to explain the overall structure of the provided code, including what the different functions such as random_unit_angular_velocity, check_identities, and main were doing, what the TODOs were asking me to implement, and what was expected from me in this question.
+
+2. For the check_identities TODO, I asked ChatGPT how to implement the loop needed to perform the numerical checks for N_CHECKS_PER_STEP random vectors at each logged time step. I already understood the two identities and the residual calculations from the question and the concepts covered in class. I mainly asked for help with the Python syntax and structure needed to repeat these checks using a for loop.
+
+3. For saving the results, I asked ChatGPT for the Python syntax to store the calculated residual data in a CSV file. I also asked how to plot the residuals against simulation time and save the resulting plot as a PNG file. These were mainly syntax-based questions about using NumPy and Matplotlib.
+
+4. I noticed that the question used a time-varying angular velocity, while the provided code also had a fixed random angular velocity function. I decided to add an option for the user to choose between time-varying and fixed angular velocity. I asked ChatGPT for help with the Python syntax for taking user input and using an if-else structure to implement this option.
+
+5. After adding the time-varying option, I realized that the angular velocity had to be updated at every simulation step because it depends on time. I asked ChatGPT how to update the angular velocity inside the simulation loop using the current simulation time.
+
+6. While running the code, I was getting warnings in the terminal output. I asked ChatGPT to identify what the warning meant and how I could filter the irrelevant warning so that the program output would be cleaner and easier to view.
+
+How I used the output (and what I changed/verified myself):
+
+1. I used ChatGPT’s explanation of the code structure to understand what each function was doing and where I needed to make changes. I then applied my understanding of the identities and the requirements of the question while editing the code.
+
+2. For check_identities, I used the suggested Python loop structure to repeat the checks for the required number of random vectors. The calculations inside the loop, including generating the random vectors, calculating both sides of each identity, finding the residuals, and keeping the maximum residual, were based on my understanding of the given identities. I then ran the code and verified the numerical residuals myself.
+
+3. I used ChatGPT’s Python syntax for saving the results to a CSV file and for plotting and saving the residuals. These were mainly implementation and syntax-related parts. I ran the program myself and verified that the CSV files and PNG plots were created correctly.
+
+4. The idea of giving the user a choice between fixed and time-varying angular velocity was my own. I used ChatGPT mainly for the Python syntax needed to take the input and implement the if-else structure. I then ran both modes myself and verified that they worked correctly.
+
+5. I used ChatGPT’s suggestion for updating the angular velocity inside the simulation loop when using the time-varying mode. I understood that the value had to be updated as the simulation time changed, and I used the suggested syntax to implement it. I then ran the simulation and verified that it worked correctly.
+
+6. I used ChatGPT’s suggestion to add warning filtering to the code for the specific irrelevant warning. I then ran the program myself and verified that the warning was no longer appearing and that the output was cleaner.
+
+The explanation of why a small but nonzero residual does not mathematically prove the identities was my own understanding of the numerical verification and the concepts from the question and class. I used the simulation to verify the identities numerically and interpreted the results myself.

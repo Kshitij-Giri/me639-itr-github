@@ -1,0 +1,32 @@
+Question 9 - AI Use Note
+
+Tool used: ChatGPT
+
+What I asked it:
+
+1. I first asked ChatGPT to explain the overall structure of the ROS2 workspace, including the purpose of the build, install, log, and src folders, the hw01_tf_demo package, and which file I needed to edit. I also asked how the ROS2 node works and how the different parts of the workspace work together.
+
+2. I asked ChatGPT to explain what RViz2 is, how it is used with ROS2 TF frames, and how I should run the node and RViz2 in separate terminals to visualize the space_frame and body_frame.
+
+3. I asked ChatGPT to explain the structure of the provided tf_broadcaster_node.py code, including the rotation functions, rotation sequence, TF broadcasting, and timer function, so that I could understand what each part was doing before making changes.
+
+4. For the on_timer TODO, I used the same current-frame and fixed-frame rotation composition concepts from Question 7. I asked ChatGPT for help with the Python syntax needed to implement the corresponding right and left multiplication in this ROS2 code.
+
+5. I wanted to add keyboard input to switch between current-frame and fixed-frame composition while RViz2 was running. I asked ChatGPT how to implement the keyboard input loop and the Python syntax needed to connect the keyboard input to the ROS parameter. The idea of using the keyboard to switch between the two modes was my own.
+
+6. I also asked ChatGPT for help with the commands needed to build the ROS2 package, source the workspace, run the TF broadcaster node, start RViz2, and configure RViz2 to visualize the TF frames.
+
+How I used the output (and what I changed/verified myself):
+
+1. I used ChatGPT’s explanation of the ROS2 workspace to understand how the different folders and files were connected. I then edited the tf_broadcaster_node.py file myself.
+
+2. I used the explanation of RViz2 and ROS2 TF to set up the two terminals and visualize the space_frame and body_frame. I ran the commands myself and verified that the frames appeared correctly in RViz2.
+
+3. I used ChatGPT’s explanation of the provided code to understand the role of the different functions and variables before implementing the TODO.
+
+4. For the on_timer function, I applied the current-frame and fixed-frame rotation concepts that I had already learned and used in Question 7. I used ChatGPT mainly for the Python syntax and structure, then ran the node and verified that both composition modes worked.
+
+5. For the keyboard input, I used the suggested Python structure for receiving keyboard input and updating the ROS parameter. I then connected it to my current and fixed frame modes and tested pressing c and f myself while RViz2 was running.
+
+6. I used ChatGPT’s guidance for the ROS2 build and run commands and the RViz2 setup. I ran the complete system myself and verified that the body frame rotated and that switching between current and fixed modes changed the orientation live.
+
