@@ -29,6 +29,15 @@ The official assignment is included as `hw01.pdf`.
 
 ------------------------------------------------------------------------
 
+# Video Demonstrations (YouTube)
+
+The following videos are provided for **TA review and grading**. Click the links to view the demonstrations for the corresponding implementation problems.
+
+- **Problem 7 — Rotation Sandbox:** [YouTube Video](https://youtu.be/o5r4-rYQZNI)
+- **Problem 9 — ROS/RViz:** [YouTube Video](https://youtu.be/vbbfkwfKGj8)
+
+------------------------------------------------------------------------
+
 # Assignment Requirements
 
 ## Part 1 -- Pen and Paper
