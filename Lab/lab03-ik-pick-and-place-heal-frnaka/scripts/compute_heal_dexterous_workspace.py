@@ -224,7 +224,7 @@ def main():
                 if count % 100 == 0 or count == total:
                     print(f"Tested {count}/{total}")
 
-    csv_path = RESULTS / "heal_downward_workspace.csv"
+    csv_path = RESULTS / "heal_dexterous_workspace.csv"
     with csv_path.open("w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=rows[0].keys())
         writer.writeheader(); writer.writerows(rows)
@@ -280,7 +280,7 @@ def main():
     ax.set_xlim(X_VALUES.min(), X_VALUES.max()); ax.set_ylim(Y_VALUES.min(), Y_VALUES.max())
     ax.set_zlim(0, Z_VALUES.max()); ax.set_box_aspect((1,1,0.85)); ax.legend()
     plt.tight_layout()
-    p3d = RESULTS / "heal_downward_workspace_3d.png"
+    p3d = RESULTS / "heal_dexterous_workspace_3d.png"
     fig.savefig(p3d, dpi=220)
 
     # Figure 2: height profile, using largest all-green rectangle area as score.
@@ -294,7 +294,7 @@ def main():
     ax_h.set_ylabel("Largest all-green rectangle area (m²)")
     ax_h.set_title("Table Height Selection: Reachable Rectangular Area vs Height")
     ax_h.grid(True, alpha=0.3); ax_h.legend(); plt.tight_layout()
-    ph = RESULTS / "heal_downward_workspace_height_optimization.png"
+    ph = RESULTS / "heal_dexterous_workspace_height_optimization.png"
     fig_h.savefig(ph, dpi=220)
 
     # Figure 3: 2D plane at the selected height, with only-green optimum rectangle.
@@ -314,11 +314,11 @@ def main():
     ax2.set_aspect("equal", adjustable="box"); ax2.set_xlabel("World X (m)"); ax2.set_ylabel("World Y (m)")
     ax2.set_title(f"Reachability at Optimized Height Z={ideal_z:.3f} m\nLargest all-green rectangle: {ideal_width_x:.2f} × {ideal_width_y:.2f} m")
     ax2.grid(True, alpha=0.25); plt.tight_layout()
-    p2d = RESULTS / "heal_downward_workspace_table_plane.png"
+    p2d = RESULTS / "heal_dexterous_workspace_table_plane.png"
     fig2.savefig(p2d, dpi=220)
 
     # Save a concise optimization summary for reproducibility.
-    summary_path = RESULTS / "heal_downward_workspace_table_optimization.txt"
+    summary_path = RESULTS / "heal_dexterous_workspace_table_optimization.txt"
     summary_path.write_text(
         f"Ideal tabletop height Z: {ideal_z:.4f} m\n"
         f"X limits: [{xmin:.4f}, {xmax:.4f}] m\n"
