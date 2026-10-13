@@ -9,10 +9,15 @@
 
 import mujoco
 import numpy as np
+from pathlib import Path
 from mujoco.viewer import launch
 
 # Path to your MuJoCo XML model (MJCF or converted URDF file)
-URDF_FILE_PATH = "/home/iitgn-robotics/Debojit_WS/me-639-introduction-to-robotics-2025-from-theory-to-practice-module-1-pick-and-place-of-objects-ITR-/robot_descriptions/single_arm_heal_effort_actuation_rs_mj.xml"
+SCRIPT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SCRIPT_DIR.parent
+URDF_FILE_PATH = str(
+    REPO_ROOT / "robot-descriptions" / "single_arm_heal_effort_actuation_rs_mj.xml"
+)
 
 # Load the MuJoCo model from the specified XML path
 model = mujoco.MjModel.from_xml_path(URDF_FILE_PATH)

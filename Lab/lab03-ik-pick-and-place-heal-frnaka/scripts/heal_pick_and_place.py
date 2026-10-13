@@ -13,7 +13,7 @@ import mujoco.viewer
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
-DESC_DIR = os.path.join(REPO_ROOT, "robot_descriptions")
+DESC_DIR = os.path.join(REPO_ROOT, "robot-descriptions")
 
 ARM_XML = os.path.join(
     DESC_DIR, "single_arm_heal_effort_actuation_rs_mj.xml"

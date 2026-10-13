@@ -4,7 +4,7 @@ Simple MuJoCo demo: load ONE HEAL arm and drive a couple of joints with constant
 joint velocities using your JointVelocityController (D-controller).
 
 Folder structure (relative to this script):
-  ../../robot_descriptions/single_arm_heal_effort_actuation_rs_mj.xml
+  ../../robot-descriptions/single_arm_heal_effort_actuation_rs_mj.xml
   ../../utils/mj_velocity_control/mj_velocity_ctrl.py
 """
 
@@ -25,7 +25,7 @@ from utils.mj_velocity_control.mj_velocity_ctrl import JointVelocityController
 
 def main():
     # Path to a single HEAL arm (effort-actuated, MuJoCo-ready)
-    robot_xml = os.path.join(REPO_ROOT, "robot_descriptions", "single_arm_heal_effort_actuation_rs_mj.xml")
+    robot_xml = os.path.join(REPO_ROOT, "robot-descriptions", "single_arm_heal_effort_actuation_rs_mj.xml")
 
     # --- Load model & data ---
     # For one robot, you can directly load the XML; no need for MjSpec composition.

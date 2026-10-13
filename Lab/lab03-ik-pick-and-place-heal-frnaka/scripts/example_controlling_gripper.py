@@ -17,7 +17,7 @@
 #    of time-based control using the simulation clock (`data.time`).
 #
 # To run this, ensure the following directory structure exists:
-#     └── robot_descriptions/
+#     └── robot-descriptions/
 #         ├── single_arm_heal_effort_actuation_rs_mj.xml
 #         └── robotiq_2f85_v4/2f85.xml
 # ------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ def construct_heal_with_gripper():
     # Resolve paths relative to this script location
     script_dir = os.path.dirname(__file__)
     repo_root  = os.path.abspath(os.path.join(script_dir, '..'))
-    desc_dir   = os.path.join(repo_root, 'robot_descriptions')
+    desc_dir   = os.path.join(repo_root, 'robot-descriptions')
 
     arm_path  = os.path.join(desc_dir, 'single_arm_heal_effort_actuation_rs_mj.xml')
     grip_path = os.path.join(desc_dir, 'robotiq_2f85_v4', '2f85.xml')
