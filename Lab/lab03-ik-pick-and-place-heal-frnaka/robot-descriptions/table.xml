@@ -1,36 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mujoco model="pick_place_table">
   <worldbody>
-    <!-- Tabletop top surface is at world z = 0.25 m; legs reach the floor at z = 0. -->
-    <body name="table" pos="0.50 0.00 0.23">
+    <!--
+      Workspace-derived HEAL pick-and-place table.
+      Top surface: z = 0.20 m.
+      Top dimensions: X = 0.45 m, Y = 0.82 m.
+      Center: x = 0.345 m, y = 0.00 m.
+      Tabletop bounds: X = 0.120 to 0.570 m; Y = -0.410 to 0.410 m.
+      Dimensions are based on the largest all-green sampled rectangle
+      in the downward-facing IK workspace plot.
+    -->
+    <body name="table" pos="0.345 0.00 0.18">
       <geom name="table_top"
             type="box"
-            size="0.30 0.30 0.02"
+            size="0.225 0.410 0.020"
             pos="0 0 0"
             rgba="0.48 0.32 0.20 1"
             contype="1"
             conaffinity="1"
             friction="1.0 0.005 0.0001"/>
 
+      <!-- Four legs extend to the floor (z = 0). -->
       <geom name="table_leg_1"
             type="box"
-            size="0.025 0.025 0.105"
-            pos="-0.25 -0.25 -0.125"
+            size="0.025 0.025 0.090"
+            pos="-0.190 -0.370 -0.090"
             rgba="0.30 0.20 0.13 1"/>
       <geom name="table_leg_2"
             type="box"
-            size="0.025 0.025 0.105"
-            pos="-0.25 0.25 -0.125"
+            size="0.025 0.025 0.090"
+            pos="-0.190 0.370 -0.090"
             rgba="0.30 0.20 0.13 1"/>
       <geom name="table_leg_3"
             type="box"
-            size="0.025 0.025 0.105"
-            pos="0.25 -0.25 -0.125"
+            size="0.025 0.025 0.090"
+            pos="0.190 -0.370 -0.090"
             rgba="0.30 0.20 0.13 1"/>
       <geom name="table_leg_4"
             type="box"
-            size="0.025 0.025 0.105"
-            pos="0.25 0.25 -0.125"
+            size="0.025 0.025 0.090"
+            pos="0.190 0.370 -0.090"
             rgba="0.30 0.20 0.13 1"/>
     </body>
   </worldbody>

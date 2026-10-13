@@ -1,0 +1,9 @@
+Ideal tabletop height Z: 0.2000 m
+X limits: [0.1125, 0.5625] m
+Y limits: [-0.4125, 0.4125] m
+X dimension: 0.4500 m
+Y dimension: 0.8250 m
+Rectangle area: 0.371250 m^2
+Reachable sampled targets at selected height: 133/221
+Base point clearance threshold: 0.120 m
+Caution: sampled IK only; no robot/object collision checking.
