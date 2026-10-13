@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Dynamic red cube for the HEAL pick-and-place scene.
+  Cube side length: 0.04 m (4 cm), a provisional size to validate against
+  the open Robotiq 2F-85 gripper before relying on it for grasping.
+  The free joint allows the main simulation to reposition the cube.
+  Intended to be composed into the main scene, not loaded alone.
+-->
+<mujoco model="pick_place_cube">
+  <worldbody>
+    <body name="cube" pos="0.25 0.00 0.25">
+      <freejoint name="cube_free"/>
+      <geom
+        name="cube_geom"
+        type="box"
+        size="0.02 0.02 0.02"
+        rgba="0.80 0.03 0.03 1"
+        mass="0.08"
+        contype="1"
+        conaffinity="1"
+        friction="1.0 0.005 0.0001"/>
+      <site name="cube_center" pos="0 0 0" size="0.004"
+        rgba="1 0.2 0.2 0"/>
+    </body>
+  </worldbody>
+</mujoco>
