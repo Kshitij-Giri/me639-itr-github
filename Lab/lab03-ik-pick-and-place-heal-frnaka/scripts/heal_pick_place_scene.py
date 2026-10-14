@@ -1,12 +1,24 @@
 #!/usr/bin/env python3
-"""Build and simulate a randomized HEAL + Robotiq 2F-85 scene.
+"""Demo of the HEAL + Robotiq 2F-85 pick-and-place scene used by main_heal_mink/dls/qp.py.
 
-The table stays fixed. Cube and container start just above the tabletop and
-settle onto it through gravity and contact. Their starting Z coordinates are
-derived from the compiled table geometry, not hard-coded table heights.
-This is a physics/scene test only; no pick-and-place controller is included.
+Shows exactly the environment the task scripts start from: the HEAL arm with the gripper open at its
+neutral configuration, the fixed table, and the cube and container placed randomly on the table
+(random position AND yaw, rotated footprints fully on the table, and at least GRIPPER_CLEARANCE between
+the cube centre and the container so the open gripper cannot touch the container while picking).
+Gravity, contact friction and the velocity controller (gravity compensation + D term, arm held at its
+neutral joints) match the task scripts. No pick-and-place controller runs here.
+
+This module also provides the scene helpers the task scripts import (construct_scene, find_id_by_suffix,
+set_free_body_pose, set_contact_friction, table_top_height, table_bounds, geometry constants), so keep
+those names when editing. The placement constants/logic below mirror the task scripts' layout sampler;
+if you change one, change the other.
+
+Run from the repository root:
+  python Lab/lab03-ik-pick-and-place-heal-frnaka/scripts/heal_pick_place_scene.py [--seed N]
+        [--no-random-yaw] [--no-randomize] [--headless]
 """
 from pathlib import Path
+import argparse
 import sys
 import time
 
@@ -17,6 +29,10 @@ import numpy as np
 SCRIPT_DIR = Path(__file__).resolve().parent
 LAB_DIR = SCRIPT_DIR.parent
 DESCRIPTIONS_DIR = LAB_DIR / "robot-descriptions"
+if str(LAB_DIR) not in sys.path:
+    sys.path.insert(0, str(LAB_DIR))
+
+from utils.mj_velocity_control.mj_velocity_ctrl import JointVelocityController  # noqa: E402
 
 ARM_XML = DESCRIPTIONS_DIR / "single_arm_heal_effort_actuation_rs_mj.xml"
 GRIPPER_XML = DESCRIPTIONS_DIR / "robotiq_2f85_v4" / "2f85.xml"
@@ -32,17 +48,22 @@ CONTAINER_HALF_X = 0.06
 CONTAINER_HALF_Y = 0.06
 CONTAINER_BASE_HALF_Z = 0.006
 
-# Robotiq 2F-85 nominal opening; XML does not encode a single exact outside
-# width scalar. Required center distance is half this nominal opening.
-GRIPPER_OPENING_GAP_M = 0.085
-MIN_OBJECT_CENTER_DISTANCE = GRIPPER_OPENING_GAP_M / 2.0
-
-EDGE_MARGIN = 0.005
+# ---- random placement (same values as the task scripts) ----
+CUBE_EDGE_MARGIN = 0.03        # m, keeps the open fingers over the table around the cube
+CONTAINER_EDGE_MARGIN = 0.01   # m
+GRIPPER_CLEARANCE = 0.10       # m, cube centre -> nearest container edge
+YAW_RANGE_DEG = 90.0           # random yaw uniform in +-this (squares repeat every 90 deg)
 MAX_SAMPLING_ATTEMPTS = 10000
-RANDOM_SEED = None
-OBJECT_YAW = 0.0
+OBJECT_YAW = 0.0               # yaw (rad) when yaw randomization is off
 INITIAL_CLEARANCE_Z = 0.001
-VIEWER_SLEEP_SECONDS = 0.005
+
+# ---- control (same as the task scripts) ----
+CONTROL_DT = 0.01
+VELOCITY_KD = 50.0
+JOINT_HOLD_KP = 5.0
+MAX_JOINT_SPEED = 1.0
+GRIPPER_OPEN_CMD = 0.0
+FRICTION = (1.0, 0.005, 0.0001)
 
 
 def require_files():
@@ -84,14 +105,6 @@ def construct_scene():
     )
     return arm_spec.compile()
 
-def compensate_gravity(model, data):
-    """
-    Applies feedforward control to each actuator to compensate for gravity and Coriolis effects.
-    This uses the bias force vector `data.qfrc_bias`, which is populated by `mj_forward()`.
-    """
-    for aid in range(model.nu):
-        joint_dof = model.actuator_trnid[aid][0]
-        data.ctrl[aid] = data.qfrc_bias[joint_dof]
 
 def find_id_by_suffix(model, object_type, suffix):
     matches = []
@@ -139,107 +152,174 @@ def table_bounds(model, data):
     )
 
 
-def footprints_overlap(cube_x, cube_y, container_x, container_y):
-    overlap_x = abs(cube_x - container_x) < CUBE_HALF_X + CONTAINER_HALF_X
-    overlap_y = abs(cube_y - container_y) < CUBE_HALF_Y + CONTAINER_HALF_Y
-    return overlap_x and overlap_y
+def container_gap(cube_x, cube_y, box_x, box_y, box_yaw_deg=0.0):
+    """Horizontal distance from the cube centre to the nearest edge of the (rotated) container."""
+    yaw = np.deg2rad(box_yaw_deg)
+    dx, dy = cube_x - box_x, cube_y - box_y
+    lx = np.cos(yaw) * dx + np.sin(yaw) * dy      # cube centre in the container frame
+    ly = -np.sin(yaw) * dx + np.cos(yaw) * dy
+    gx = max(abs(lx) - CONTAINER_HALF_X, 0.0)
+    gy = max(abs(ly) - CONTAINER_HALF_Y, 0.0)
+    return float(np.hypot(gx, gy))
 
 
-def randomize_object_positions(model, data, rng):
+def _yaw_extent(half_x, half_y, yaw_deg):
+    """Half-extent of a rotated rectangle's axis-aligned bounding box."""
+    c, s = abs(np.cos(np.deg2rad(yaw_deg))), abs(np.sin(np.deg2rad(yaw_deg)))
+    return half_x * c + half_y * s, half_x * s + half_y * c
+
+
+def randomize_object_positions(model, data, rng, randomize_yaw=True):
+    """Random cube/container pose on the table with gripper clearance between them.
+
+    Table bounds and height are read from the compiled table geometry. The rotated footprints must
+    stay fully on the table (with edge margins). Objects start 1 mm above the table and settle under
+    gravity and contact.
+    """
     cube_joint = find_id_by_suffix(model, mujoco.mjtObj.mjOBJ_JOINT, "cube_free")
-    container_joint = find_id_by_suffix(
-        model, mujoco.mjtObj.mjOBJ_JOINT, "container_free"
-    )
-
-    # Forward kinematics first, then derive table bounds/top from the compiled
-    # table geom. This makes object placement follow edits to table.xml.
+    box_joint = find_id_by_suffix(model, mujoco.mjtObj.mjOBJ_JOINT, "container_free")
     mujoco.mj_forward(model, data)
-    x_min, x_max, y_min, y_max = table_bounds(model, data)
+    x0, x1, y0, y1 = table_bounds(model, data)
     top_z = table_top_height(model, data)
 
-    cube_x_min = x_min + CUBE_HALF_X + EDGE_MARGIN
-    cube_x_max = x_max - CUBE_HALF_X - EDGE_MARGIN
-    cube_y_min = y_min + CUBE_HALF_Y + EDGE_MARGIN
-    cube_y_max = y_max - CUBE_HALF_Y - EDGE_MARGIN
-
-    container_x_min = x_min + CONTAINER_HALF_X + EDGE_MARGIN
-    container_x_max = x_max - CONTAINER_HALF_X - EDGE_MARGIN
-    container_y_min = y_min + CONTAINER_HALF_Y + EDGE_MARGIN
-    container_y_max = y_max - CONTAINER_HALF_Y - EDGE_MARGIN
-
     for attempt in range(1, MAX_SAMPLING_ATTEMPTS + 1):
-        cube_x = rng.uniform(cube_x_min, cube_x_max)
-        cube_y = rng.uniform(cube_y_min, cube_y_max)
-        container_x = rng.uniform(container_x_min, container_x_max)
-        container_y = rng.uniform(container_y_min, container_y_max)
-
-        distance = float(np.hypot(cube_x - container_x, cube_y - container_y))
-        if distance < MIN_OBJECT_CENTER_DISTANCE:
+        cyaw = rng.uniform(-YAW_RANGE_DEG, YAW_RANGE_DEG) if randomize_yaw else 0.0
+        byaw = rng.uniform(-YAW_RANGE_DEG, YAW_RANGE_DEG) if randomize_yaw else 0.0
+        chx, chy = _yaw_extent(CUBE_HALF_X, CUBE_HALF_Y, cyaw)
+        bhx, bhy = _yaw_extent(CONTAINER_HALF_X, CONTAINER_HALF_Y, byaw)
+        cx = rng.uniform(x0 + chx + CUBE_EDGE_MARGIN, x1 - chx - CUBE_EDGE_MARGIN)
+        cy = rng.uniform(y0 + chy + CUBE_EDGE_MARGIN, y1 - chy - CUBE_EDGE_MARGIN)
+        bx = rng.uniform(x0 + bhx + CONTAINER_EDGE_MARGIN, x1 - bhx - CONTAINER_EDGE_MARGIN)
+        by = rng.uniform(y0 + bhy + CONTAINER_EDGE_MARGIN, y1 - bhy - CONTAINER_EDGE_MARGIN)
+        gap = container_gap(cx, cy, bx, by, byaw)
+        if gap < GRIPPER_CLEARANCE:
             continue
-        if footprints_overlap(cube_x, cube_y, container_x, container_y):
-            continue
 
-        # Place objects slightly above the top; simulation gravity settles them
-        # onto the table. Yaw=0 keeps all square sides parallel.
-        set_free_body_pose(
-            model, data, cube_joint, cube_x, cube_y,
-            top_z + CUBE_HALF_Z + INITIAL_CLEARANCE_Z, OBJECT_YAW
-        )
-        set_free_body_pose(
-            model, data, container_joint, container_x, container_y,
-            top_z + CONTAINER_BASE_HALF_Z + INITIAL_CLEARANCE_Z, OBJECT_YAW
-        )
+        set_free_body_pose(model, data, cube_joint, cx, cy,
+                           top_z + CUBE_HALF_Z + INITIAL_CLEARANCE_Z, np.deg2rad(cyaw))
+        set_free_body_pose(model, data, box_joint, bx, by,
+                           top_z + CONTAINER_BASE_HALF_Z + INITIAL_CLEARANCE_Z, np.deg2rad(byaw))
         mujoco.mj_forward(model, data)
 
-        print("\nRandomized placement:")
-        print(f"  Table top Z:      {top_z:.4f} m (read from table.xml geometry)")
-        print(f"  Cube XY:          ({cube_x:.3f}, {cube_y:.3f}) m")
-        print(f"  Container XY:     ({container_x:.3f}, {container_y:.3f}) m")
-        print(f"  Center distance:  {distance:.3f} m")
-        print(f"  Minimum distance: {MIN_OBJECT_CENTER_DISTANCE:.3f} m")
-        print("  Cube/container yaw: 0 degrees (sides parallel)")
-        print(f"  Sampling attempts: {attempt}")
+        print("\nRandomized placement (table-relative limits respected):")
+        print(f"  Table top Z:    {top_z:.4f} m (read from table.xml geometry)")
+        print(f"  Table X range:  {x0:.3f} .. {x1:.3f} m | Y range: {y0:.3f} .. {y1:.3f} m")
+        print(f"  Cube XY:        ({cx:.3f}, {cy:.3f}) m, yaw {cyaw:+.1f} deg")
+        print(f"  Container XY:   ({bx:.3f}, {by:.3f}) m, yaw {byaw:+.1f} deg")
+        print(f"  Cube centre -> container edge: {gap * 100:.1f} cm "
+              f"(required >= {GRIPPER_CLEARANCE * 100:.0f} cm) | sampling attempts: {attempt}")
         return
-
-
     raise RuntimeError(
-        f"No valid placement found in {MAX_SAMPLING_ATTEMPTS} attempts."
+        f"No valid placement with {GRIPPER_CLEARANCE * 100:.0f} cm gripper clearance found "
+        f"in {MAX_SAMPLING_ATTEMPTS} attempts."
     )
 
 
-def main():
-    print("Building HEAL pick-and-place scene...")
+def build_world(randomize=True, seed=None, randomize_yaw=True):
+    """Compile the scene and apply the task environment: gravity, friction, object layout."""
     model = construct_scene()
     data = mujoco.MjData(model)
 
     # Explicitly enable normal downward gravity for the entire simulation.
     model.opt.gravity[:] = (0.0, 0.0, -9.81)
 
-    # Ensure friction on table, cube and container contact surfaces. Friction
-    # stays enabled throughout; it is not toggled on only during grasping.
-    set_contact_friction(model, "table_top", (1.0, 0.005, 0.0001))
-    set_contact_friction(model, "cube_geom", (1.0, 0.005, 0.0001))
-    set_contact_friction(model, "container_base", (1.0, 0.005, 0.0001))
+    # Friction stays enabled throughout; it is not toggled on only during grasping.
+    for geom in ("table_top", "cube_geom", "container_base"):
+        set_contact_friction(model, geom, FRICTION)
 
-    rng = np.random.default_rng(RANDOM_SEED)
     mujoco.mj_forward(model, data)
-    randomize_object_positions(model, data, rng)
+    if randomize:
+        randomize_object_positions(model, data, np.random.default_rng(seed), randomize_yaw)
+    else:
+        print("\nUsing the default XML positions for cube and container (no randomization).")
+    return model, data
+
+
+class NeutralHold:
+    """Holds the arm at its initial joints with the task's JointVelocityController; gripper open."""
+
+    def __init__(self, model, data):
+        self.model, self.data = model, data
+        self.arm_joints = [find_id_by_suffix(model, mujoco.mjtObj.mjOBJ_JOINT, f"joint_{i}") for i in range(1, 7)]
+        self.qadr = np.array([model.jnt_qposadr[j] for j in self.arm_joints])
+        self.dofadr = np.array([model.jnt_dofadr[j] for j in self.arm_joints])
+        acts = [a for a in range(model.nu) if (mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_ACTUATOR, a) or "")
+                .endswith("fingers_actuator")]
+        if len(acts) != 1 or list(range(6)) != [a for a in range(model.nu) if a != acts[0]][:6]:
+            raise ValueError("Unexpected actuator layout (expected arm actuators 0-5 and one gripper actuator)")
+        self.grip = acts[0]
+        self.controller = JointVelocityController(model, data, kd=VELOCITY_KD, gripper_ids=[self.grip])
+        self.ff = 1.0 + model.dof_damping[self.dofadr] / VELOCITY_KD  # same damping feed-forward as the task
+        self.q_hold = data.qpos[self.qadr].copy()
+        self.n_sub = max(1, int(round(CONTROL_DT / model.opt.timestep)))
+        self.dt = self.n_sub * model.opt.timestep
+
+    def step(self):
+        """One control period: hold neutral joints, gripper open."""
+        err = self.q_hold - self.data.qpos[self.qadr]
+        v = np.clip(JOINT_HOLD_KP * err, -MAX_JOINT_SPEED, MAX_JOINT_SPEED)
+        v7 = np.zeros(self.model.nu)
+        v7[:6] = v * self.ff
+        self.controller.set_velocity_target(v7)
+        for _ in range(self.n_sub):
+            self.data.ctrl[self.grip] = GRIPPER_OPEN_CMD
+            mujoco.mj_step(self.model, self.data)
+
+
+def report(model, data, hold):
+    """Check the settled scene: objects at rest on the table, arm still at neutral."""
+    top = table_top_height(model, data)
+    cube = data.qpos[model.jnt_qposadr[find_id_by_suffix(model, mujoco.mjtObj.mjOBJ_JOINT, "cube_free")]:][:3]
+    box = data.qpos[model.jnt_qposadr[find_id_by_suffix(model, mujoco.mjtObj.mjOBJ_JOINT, "container_free")]:][:3]
+    drift = float(np.max(np.abs(data.qpos[hold.qadr] - hold.q_hold)))
+    print("\nSettled scene check:")
+    print(f"  Cube z {cube[2]:.4f} m (resting height {top + CUBE_HALF_Z:.4f})")
+    print(f"  Container z {box[2]:.4f} m (resting height {top + CONTAINER_BASE_HALF_Z:.4f})")
+    print(f"  Arm drift from neutral: {drift:.5f} rad | gripper command: open ({GRIPPER_OPEN_CMD:.0f})")
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--seed", type=int, default=None, help="layout seed (printed if omitted)")
+    ap.add_argument("--no-randomize", action="store_true", help="keep the default XML object positions")
+    ap.add_argument("--no-random-yaw", action="store_true", help="random positions only; yaw stays 0")
+    ap.add_argument("--headless", action="store_true", help="no viewer: settle for 2 s, print a check, exit")
+    args = ap.parse_args()
+    seed = args.seed if args.seed is not None else int(np.random.SeedSequence().entropy % 2**31)
+
+    print("Building HEAL pick-and-place scene...")
+    if not args.no_randomize:
+        print(f"Layout seed: {seed}  (rerun with --seed {seed} to reproduce)")
+    model, data = build_world(not args.no_randomize, seed, not args.no_random_yaw)
+    hold = NeutralHold(model, data)
+    mujoco.set_mjcb_control(hold.controller.control_callback)
 
     print("\nScene ready.")
     print(f"  Gravity: {model.opt.gravity}")
     print("  Table/cube/container contact friction: enabled")
     print(f"  Bodies: {model.nbody} | Joints: {model.njnt} | Actuators: {model.nu}")
-    print("\nOpening viewer and advancing physics. Close the viewer to exit.")
-    print("NOTE: no robot controller is running yet; the uncommanded arm may move/fall.")
+    print(f"  Control period {hold.dt * 1000:.0f} ms | arm held at neutral | gripper open")
 
-    with mujoco.viewer.launch_passive(
-        model, data, show_left_ui=False, show_right_ui=False
-    ) as viewer:
-        while viewer.is_running():
-            compensate_gravity(model, data)
-            mujoco.mj_step(model, data)
-            viewer.sync()
-            time.sleep(VIEWER_SLEEP_SECONDS)
+    try:
+        if args.headless:
+            for _ in range(int(2.0 / hold.dt)):
+                hold.step()
+            report(model, data, hold)
+            return
+        print("\nOpening viewer and advancing physics. Close the viewer to exit.")
+        with mujoco.viewer.launch_passive(
+            model, data, show_left_ui=False, show_right_ui=False
+        ) as viewer:
+            settled_reported = False
+            while viewer.is_running():
+                hold.step()
+                viewer.sync()
+                if not settled_reported and data.time > 2.0:
+                    report(model, data, hold)
+                    settled_reported = True
+                time.sleep(hold.dt)
+    finally:
+        mujoco.set_mjcb_control(None)
 
 
 if __name__ == "__main__":
