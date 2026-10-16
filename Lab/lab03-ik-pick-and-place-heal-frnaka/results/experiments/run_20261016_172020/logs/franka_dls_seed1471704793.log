@@ -1,0 +1,18 @@
+Randomized placement (table-relative limits respected):
+  Table top z = 0.100 m | X 0.200..0.700 m | Y -0.500..0.500 m
+  Cube XY:       (0.270, 0.069) m, yaw +47.9 deg
+  Container XY:  (0.498, -0.222) m, yaw -68.5 deg
+  Cube centre -> container edge: 29.8 cm (required >= 10 cm) | sampling attempts: 1
+[t=   0.00s] Control period 10.0 ms (5 x model dt 2.0 ms) | TCP offset in 'gripper' site frame [ 0.     -0.      0.0036] m (measured at cube-closure width; gripper-open value would be z=0.0037)
+[t=   0.00s] Initial arm config q = [ 0.    -0.785  0.    -2.356  0.     1.571  0.785] | gripper open
+[t=   0.00s] STAGE 0a: letting cube and container settle on the table
+[t=   0.50s] STAGE 0b: cube yaw +47.86 deg -> finger pads must be parallel to its faces
+[t=   0.50s] STAGE 0b: tool target yaw +47.86 deg (predicted joint7 +11.5 deg)
+[t=   0.50s] STAGE 1: cube at (Xc, Yc, Zc) = (0.2698, 0.0691, 0.1199)
+[t=   0.50s] move above cube: TCP [0.307  0.     0.4866] -> [0.2698 0.0691 0.2199]  (27.8 cm)
+[t=   4.23s] move above cube: reached (pos err 0.01 mm, tilt 0.00 deg, yaw err 0.00 deg, joint7 13.44 deg)
+[t=   4.23s]   finger pads vs cube faces: -0.00 deg off parallel (joint7 = +13.4 deg)
+[t=   4.23s] STAGE 2: descend to cube (grasp point Zc + 3.0 mm clearance)
+[t=   4.23s] descend: TCP [0.2698 0.0691 0.2199] -> [0.2698 0.0691 0.1229]  (9.7 cm)
+
+EPISODE RESULT: success=False category=motion_timeout_descend

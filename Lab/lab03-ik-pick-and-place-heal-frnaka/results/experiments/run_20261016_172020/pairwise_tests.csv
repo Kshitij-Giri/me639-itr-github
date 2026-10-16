@@ -1,0 +1,7 @@
+robot,method_a,method_b,paired_seeds,a_only_success,b_only_success,both_success,both_fail,mcnemar_exact_p
+heal,mink,dls,25,0,0,25,0,1.0
+heal,mink,qp,25,0,0,25,0,1.0
+heal,dls,qp,25,0,0,25,0,1.0
+franka,mink,dls,25,2,0,23,0,0.5
+franka,mink,qp,25,0,0,25,0,1.0
+franka,dls,qp,25,0,2,23,0,0.5

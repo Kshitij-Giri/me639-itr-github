@@ -1,0 +1,41 @@
+Randomized placement (table-relative limits respected):
+  Table top z = 0.100 m | X 0.200..0.700 m | Y -0.500..0.500 m
+  Cube XY:       (0.259, 0.361) m, yaw +47.4 deg
+  Container XY:  (0.539, -0.169) m, yaw -46.1 deg
+  Cube centre -> container edge: 52.8 cm (required >= 10 cm) | sampling attempts: 1
+[t=   0.00s] Control period 10.0 ms (5 x model dt 2.0 ms) | TCP offset in 'gripper' site frame [ 0.     -0.      0.0036] m (measured at cube-closure width; gripper-open value would be z=0.0037)
+[t=   0.00s] Initial arm config q = [ 0.    -0.785  0.    -2.356  0.     1.571  0.785] | gripper open
+[t=   0.00s] STAGE 0a: letting cube and container settle on the table
+[t=   0.50s] STAGE 0b: cube yaw +47.35 deg -> finger pads must be parallel to its faces
+[t=   0.50s] STAGE 0b: tool target yaw +137.35 deg (predicted joint7 -37.9 deg)
+[t=   0.50s] STAGE 1: cube at (Xc, Yc, Zc) = (0.2585, 0.3612, 0.1199)
+[t=   0.50s] move above cube: TCP [0.307  0.     0.4866] -> [0.2585 0.3612 0.2199]  (45.2 cm)
+[t=   9.74s] move above cube: reached (pos err 0.01 mm, tilt 0.00 deg, yaw err 0.00 deg, joint7 -39.23 deg)
+[t=   9.74s]   finger pads vs cube faces: -0.00 deg off parallel (joint7 = -39.2 deg)
+[t=   9.74s] STAGE 2: descend to cube (grasp point Zc + 3.0 mm clearance)
+[t=   9.74s] descend: TCP [0.2585 0.3612 0.2199] -> [0.2585 0.3612 0.1229]  (9.7 cm)
+[t=  13.03s] descend: reached (pos err 0.01 mm, tilt 0.00 deg, yaw err 0.00 deg, joint7 -36.79 deg)
+[t=  13.03s] STAGE 3: grasp
+[t=  13.03s] close gripper: command 0.000 m
+[t=  13.49s] close gripper: stopped (finger joints 0.0198 m, pad contact left=True right=True)
+[t=  13.49s] STAGE 4: lift
+[t=  13.49s] lift: TCP [0.2585 0.3612 0.1229] -> [0.2585 0.3612 0.2199]  (9.7 cm)
+[t=  16.78s] lift: reached (pos err 0.14 mm, tilt 0.02 deg, yaw err 0.00 deg, joint7 -39.23 deg)
+[t=  16.78s]   cube held (offset from TCP [-0.    -0.    -0.007] m)
+[t=  16.78s] STAGE 5: container at (Xb, Yb, Zb) = (0.5395, -0.1692, 0.1059)
+[t=  16.78s]   container yaw -46.06 deg, cube yaw in hand -0.00 deg off tool axis
+[t=  16.78s]   drop yaw: tool target yaw +43.94 deg (predicted joint7 -9.7 deg)
+[t=  16.78s] transfer (horizontal): TCP [0.2585 0.3611 0.2198] -> [ 0.5395 -0.1692  0.2199]  (60.0 cm)
+[t=  24.54s] transfer (horizontal): reached (pos err 0.15 mm, tilt 0.02 deg, yaw err 0.00 deg, joint7 -20.79 deg)
+[t=  24.54s] align to drop height: TCP [ 0.5394 -0.1692  0.2198] -> [ 0.5395 -0.1692  0.2059]  (1.4 cm)
+[t=  25.23s] align to drop height: reached (pos err 0.16 mm, tilt 0.02 deg, yaw err 0.00 deg, joint7 -21.40 deg)
+[t=  25.23s] STAGE 6: release
+[t=  25.23s] release: command 0.040 m
+[t=  25.62s] release: open (finger joints 0.0399 m)
+[t=  25.62s]   waiting for cube to come to rest
+[t=  25.92s] PLACEMENT VERIFIED: cube (0.539, -0.169, 0.132) vs container (0.539, -0.169, 0.106): offset in container frame (-0.1, -0.1) mm, dz_from_base_rest=-0.1 mm, yaw vs container walls -0.22 deg (tol 3)
+[t=  25.92s] STAGE 7: return to initial/neutral configuration
+[t=  28.14s]   final q = [ 1.0000e-04 -7.8420e-01 -5.0000e-04 -2.3555e+00  5.0000e-04  1.5721e+00
+  7.8350e-01] (max error 0.0015 rad)
+
+EPISODE RESULT: success=True category=

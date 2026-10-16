@@ -1,0 +1,39 @@
+Randomized placement (table-relative limits respected):
+  Cube XY:       (0.441, 0.030) m, yaw -26.4 deg
+  Container XY:  (0.320, 0.208) m, yaw -86.6 deg
+  Cube centre -> container edge: 13.5 cm (required >= 10 cm) | sampling attempts: 1
+[t=   0.00s] Control period 10.0 ms (5 x model dt 2.0 ms) | TCP offset in flange frame [ 0.     -0.      0.1529] m (measured at cube-closure width; gripper-open value would be z=0.1403)
+[t=   0.00s] Initial arm config q = [0. 0. 0. 0. 0. 0.] | gripper open
+[t=   0.00s] STAGE 0a: letting cube and container settle on the table
+[t=   0.50s] STAGE 0b: cube yaw -26.44 deg -> plates must be parallel to its faces
+[t=   0.50s] STAGE 0b: finger-axis target yaw +63.56 deg (predicted joint_6 -1.1 deg)
+[t=   0.50s] STAGE 1: cube at (Xc, Yc, Zc) = (0.4411, 0.0298, 0.2199)
+[t=   0.50s] move above cube: TCP [ 0.3776 -0.0004  0.3455] -> [0.4411 0.0298 0.3199]  (7.5 cm)
+[t=   1.69s] move above cube: reached (pos err 0.01 mm, tilt 0.00 deg, yaw err 0.00 deg, joint_6 -1.22 deg)
+[t=   1.69s]   finger plates vs cube faces: -0.00 deg off parallel (joint_6 = -1.2 deg)
+[t=   1.69s] STAGE 2: descend to cube (grasp point Zc + 3.0 mm clearance)
+[t=   1.69s] descend: TCP [0.4411 0.0298 0.3199] -> [0.4411 0.0298 0.2229]  (9.7 cm)
+[t=   4.98s] descend: reached (pos err 0.01 mm, tilt 0.00 deg, yaw err 0.00 deg, joint_6 -6.27 deg)
+[t=   4.98s] STAGE 3: grasp
+[t=   4.98s] close gripper: command 255
+[t=   5.43s] close gripper: stopped (driver 0.483 rad, pad contact left=True right=True)
+[t=   5.43s] STAGE 4: lift
+[t=   5.43s] lift: TCP [0.4412 0.0298 0.2231] -> [0.4411 0.0298 0.3199]  (9.7 cm)
+[t=   8.71s] lift: reached (pos err 0.09 mm, tilt 0.01 deg, yaw err 0.00 deg, joint_6 -1.22 deg)
+[t=   8.71s]   cube held (offset from TCP [ 0.0001 -0.0001 -0.0045] m)
+[t=   8.71s] STAGE 5: container at (Xb, Yb, Zb) = (0.3203, 0.2084, 0.2059)
+[t=   8.71s]   container yaw -86.63 deg, cube yaw in hand -0.06 deg off finger axis
+[t=   8.71s]   drop yaw: finger-axis target yaw +93.42 deg (predicted joint_6 -0.5 deg)
+[t=   8.71s] transfer (horizontal): TCP [0.4411 0.0298 0.3198] -> [0.3203 0.2084 0.3199]  (21.6 cm)
+[t=  11.66s] transfer (horizontal): reached (pos err 0.07 mm, tilt 0.01 deg, yaw err 0.00 deg, joint_6 -0.65 deg)
+[t=  11.66s] align to drop height: TCP [0.3203 0.2084 0.3198] -> [0.3203 0.2084 0.3059]  (1.4 cm)
+[t=  12.37s] align to drop height: reached (pos err 0.07 mm, tilt 0.01 deg, yaw err 0.00 deg, joint_6 -0.99 deg)
+[t=  12.37s] STAGE 6: release
+[t=  12.37s] release: command 0
+[t=  12.94s] release: open (driver 0.005 rad)
+[t=  12.94s]   waiting for cube to come to rest
+[t=  13.24s] PLACEMENT VERIFIED: cube (0.320, 0.208, 0.232) vs container (0.320, 0.208, 0.206): offset in container frame (+0.0, +0.1) mm, dz_from_base_rest=-0.1 mm, yaw vs container walls +0.71 deg (tol 3)
+[t=  13.24s] STAGE 7: return to initial/neutral configuration
+[t=  14.73s]   final q = [ 0.0012  0.0002 -0.0003 -0.0004  0.0004 -0.    ] (max error 0.0012 rad)
+
+EPISODE RESULT: success=True category=
