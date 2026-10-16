@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mujoco model="franka_pick_place_table">
+  <worldbody>
+    <!--
+      Franka Panda pick-and-place table derived from the workspace optimization
+      report generated on 2026-10-16.
+
+      World-frame tabletop surface height: z = 0.1000 m
+      Tabletop dimensions: X = 0.5000 m, Y = 1.0000 m
+      Table centre: (x, y) = (0.4500, 0.0000) m
+      Tabletop bounds: X = 0.2000 to 0.7000 m
+                       Y = -0.5000 to 0.5000 m
+
+      The table body is positioned at z = 0.0800 m, so the tabletop
+      half-thickness of 0.0200 m places its upper surface at z = 0.1000 m.
+      This file is intended to be attached to the Franka scene via MjSpec.
+    -->
+    <body name="table" pos="0.4500 0.0000 0.0800">
+      <geom name="table_top"
+            type="box"
+            size="0.2500 0.5000 0.0200"
+            pos="0 0 0"
+            rgba="0.48 0.32 0.20 1"
+            contype="1"
+            conaffinity="1"
+            friction="1.0 0.005 0.0001"/>
+
+      <!-- Four legs extend to the floor (z = 0). -->
+      <geom name="table_leg_1"
+            type="box"
+            size="0.025 0.025 0.040"
+            pos="-0.215 -0.460 -0.040"
+            rgba="0.30 0.20 0.13 1"/>
+      <geom name="table_leg_2"
+            type="box"
+            size="0.025 0.025 0.040"
+            pos="-0.215 0.460 -0.040"
+            rgba="0.30 0.20 0.13 1"/>
+      <geom name="table_leg_3"
+            type="box"
+            size="0.025 0.025 0.040"
+            pos="0.215 -0.460 -0.040"
+            rgba="0.30 0.20 0.13 1"/>
+      <geom name="table_leg_4"
+            type="box"
+            size="0.025 0.025 0.040"
+            pos="0.215 0.460 -0.040"
+            rgba="0.30 0.20 0.13 1"/>
+    </body>
+  </worldbody>
+</mujoco>

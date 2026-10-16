@@ -1,28 +1,11 @@
 #!/usr/bin/env python3
-"""One complete HEAL + Robotiq 2F-85 pick-and-place episode in MuJoCo.
-
-Reuses (does not duplicate):
-  * scripts/heal_pick_place_scene.py  -> scene construction, friction, randomization
-  * utils/mink_ik_heal/mink_ik_heal.py -> Mink differential IK (6 arm joint velocities)
-  * utils/mj_velocity_control/mj_velocity_ctrl.py -> JointVelocityController
-    (gravity compensation + D-term, registered as MuJoCo's control callback)
-
-Sequence (all motion is closed-loop on the live MuJoCo state; nothing is teleported):
-  0. settle objects, read the cube's yaw and choose the finger-axis yaw that is parallel to its faces
-  1. move above cube        (Xc, Yc, Zc + 0.10)
-  2. descend                (Xc, Yc, Zc)
-  3. close gripper, verify both pads touch the cube
-  4. lift                   (Xc, Yc, Zc + 0.10), verify cube came along
-  5. carry horizontally to  (Xb, Yb, Zb + 0.10)
-  6. open gripper, cube drops into the container
-  7. verify placement, return to the initial/neutral joint configuration
-
-All IK targets are *grasp-point (TCP) targets*: the point midway between the four
-finger-pad geoms. Mink controls the flange site ``ft_site_eff``, so the constant
-flange->TCP offset is measured from the compiled model and removed from every target.
+"""HEAL pick-and-place with a selectable IK method: Mink, DLS, or QP.
 
 Run from the repository root:
-  python Lab/lab03-ik-pick-and-place-heal-frnaka/scripts/main_heal.py [--seed N] [--no-randomize] [--no-random-yaw] [--no-viewer]
+  python Lab/lab03-ik-pick-and-place-heal-frnaka/scripts/HealPickPlace.py
+Optional flags:
+  --ik {mink,dls,qp} --seed N --no-viewer --no-randomize --no-random-yaw
+If --ik is omitted, the script asks the user to choose interactively.
 """
 from __future__ import annotations
 
@@ -42,12 +25,53 @@ for _p in (LAB_DIR, SCRIPT_DIR):  # SCRIPT_DIR ends up first, LAB_DIR second
         sys.path.insert(0, str(_p))
 
 import heal_pick_place_scene as scene  # noqa: E402
-from utils.mink_ik_heal.mink_ik_heal import (  # noqa: E402
-    HEAL_JOINT_NAMES,
-    MinkIKHeal,
-    downward_rotation,
+from utils.mink_ik.mink_ik import MinkIK, downward_rotation
+from utils.dls_ik.dls_ik import DLSIK, IKFailure as DLSIKFailure
+from utils.qp_ik.qp_ik import QPIK, IKFailure as QPIKFailure
+from utils.mj_velocity_control.mj_velocity_ctrl import JointVelocityController 
+
+# Robot-specific configuration belongs in this task file, not in the shared IK utility.
+HEAL_JOINT_NAMES = (
+    "joint_1",
+    "joint_2",
+    "joint_3",
+    "joint_4",
+    "joint_5",
+    "joint_6",
 )
-from utils.mj_velocity_control.mj_velocity_ctrl import JointVelocityController  # noqa: E402
+
+IK_METHOD = "mink"
+IK_METHOD_LABELS = {
+    "mink": "Mink IK",
+    "dls": "DLS IK",
+    "qp": "QP IK",
+}
+MAX_CONSECUTIVE_IK_FAILURES = 50
+
+
+class GuardedIK:
+    """Count IK calls and hold the arm still during isolated custom-solver failures."""
+
+    def __init__(self, solver, catch=()):
+        self.solver = solver
+        self.catch = tuple(catch)
+        self.consecutive_failures = 0
+
+    def compute_joint_velocities(self, target_position, target_rotation):
+        try:
+            velocities = self.solver.compute_joint_velocities(
+                target_position, target_rotation
+            )
+            self.consecutive_failures = 0
+            return velocities
+        except self.catch as exc:
+            self.consecutive_failures += 1
+            if self.consecutive_failures >= MAX_CONSECUTIVE_IK_FAILURES:
+                raise TaskError(
+                    f"{IK_METHOD_LABELS[IK_METHOD]} failed for "
+                    f"{self.consecutive_failures} consecutive IK updates: {exc}"
+                ) from exc
+            return np.zeros(len(HEAL_JOINT_NAMES), dtype=float)
 
 # --------------------------------------------------------------------------------------
 # Task parameters
@@ -259,11 +283,34 @@ class PickPlace:
         # gives steady-state joint speed == requested speed.
         self.ff_scale = 1.0 + model.dof_damping[self.arm_dofadr] / VELOCITY_KD
 
-        # ---- IK (existing utility): full 6-D pose target; joint_6 is free and solves the yaw ----
+        # ---- IK: choose one solver while keeping the pick-and-place logic unchanged ----
         self.site_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SITE, "ft_site_eff")
-        self.ik = MinkIKHeal(model, data, site_name="ft_site_eff", dt=self.dt,
-                             damping=IK_DAMPING, gain=IK_GAIN,
-                             max_joint_velocity=MAX_JOINT_SPEED)
+        if IK_METHOD == "mink":
+            solver = MinkIK(
+                model, data, joint_names=HEAL_JOINT_NAMES,
+                site_name="ft_site_eff", dt=self.dt,
+                damping=IK_DAMPING, gain=IK_GAIN,
+                max_joint_velocity=MAX_JOINT_SPEED,
+            )
+            self.ik = solver
+        elif IK_METHOD == "dls":
+            solver = DLSIK(
+                model, data, joint_names=HEAL_JOINT_NAMES,
+                site_name="ft_site_eff", dt=self.dt,
+                damping=IK_DAMPING, gain=IK_GAIN,
+                max_joint_velocity=MAX_JOINT_SPEED,
+            )
+            self.ik = GuardedIK(solver, catch=(DLSIKFailure,))
+        elif IK_METHOD == "qp":
+            solver = QPIK(
+                model, data, joint_names=HEAL_JOINT_NAMES,
+                site_name="ft_site_eff", solver="daqp", dt=self.dt,
+                damping=IK_DAMPING, gain=IK_GAIN,
+                max_joint_velocity=MAX_JOINT_SPEED,
+            )
+            self.ik = GuardedIK(solver, catch=(QPIKFailure,))
+        else:
+            raise ValueError(f"Unknown IK method: {IK_METHOD}")
         self.target_yaw = 0.0  # deg; set from the cube's yaw in choose_grasp_yaw()
 
         self.q_neutral = data.qpos[self.arm_qadr].copy()
@@ -669,7 +716,11 @@ class PickPlace:
 
 # --------------------------------------------------------------------------------------
 def main():
+    global IK_METHOD
+
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--ik", choices=["mink", "dls", "qp"], default=None,
+                    help="IK method: mink, dls, or qp (if omitted, prompt interactively)")
     ap.add_argument("--no-viewer", action="store_true", help="run headless (also runs faster than real time)")
     ap.add_argument("--no-randomize", action="store_true",
                     help="keep the default XML object positions instead of random placement")
@@ -677,11 +728,28 @@ def main():
                     help="random positions only; cube and container yaw stay 0")
     ap.add_argument("--seed", type=int, default=None, help="random-layout seed (printed if omitted)")
     args = ap.parse_args()
+
+    if args.ik is None:
+        print("\nChoose the inverse-kinematics method:")
+        print("  1. Mink IK")
+        print("  2. DLS IK")
+        print("  3. QP IK")
+        while True:
+            choice = input("Enter 1, 2, or 3: ").strip()
+            method_by_choice = {"1": "mink", "2": "dls", "3": "qp"}
+            if choice in method_by_choice:
+                IK_METHOD = method_by_choice[choice]
+                break
+            print("Invalid choice. Please enter 1, 2, or 3.")
+    else:
+        IK_METHOD = args.ik
+
+    print(f"Selected method: {IK_METHOD_LABELS[IK_METHOD]}")
     seed = args.seed if args.seed is not None else int(np.random.SeedSequence().entropy % 2**31)
     if not args.no_randomize:
         print(f"Layout seed: {seed}  (rerun with --seed {seed} to reproduce)")
 
-    print("Building HEAL pick-and-place scene...")
+    print(f"Building HEAL pick-and-place scene using {IK_METHOD_LABELS[IK_METHOD]}...")
     model, data = build_world(not args.no_randomize, seed, not args.no_random_yaw)
     viewer_cm = None
     viewer = None
