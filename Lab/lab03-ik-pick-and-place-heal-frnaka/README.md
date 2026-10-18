@@ -17,7 +17,7 @@ The workflow includes workspace sampling, table selection, randomized episodes, 
 ## Submission Links
 
 - **Demonstration video:** [Pick-and-Place Demo](https://youtu.be/yv1NYxJ2LtA)
-- **Report:** `ITR_LAb3.pdf` (submitted with the Lab 3 materials).
+- **Report:** `lab3_report_23110177.pdf`
 - **Code and results:** Available in this directory.
 
 ## Repository Layout
@@ -50,8 +50,11 @@ lab03-ik-pick-and-place-heal-frnaka/
 │       ├── summary.csv / summary.json / report.md
 │       ├── layouts.csv / failure_summary.csv / pairwise_tests.csv
 │       ├── plots/ screenshots/ failure_states/ logs/
-└── video-demo/
-    └── pick_place_video_demo.mp4
+├── video-demo/
+│   └── pick_place_video_demo.mp4
+└── report/
+    └── lab3_report_23110177.pdf
+
 ```
 
 ## Where to Start
@@ -117,5 +120,3 @@ Workspace-analysis scripts are available as `scripts/compute_*_workspace.py`. Ch
 - `robot-descriptions/` contains the MuJoCo XML models and assets required by the scenes.
 - `results/` stores generated data and figures separately from source code.
 - `video-demo/pick_place_video_demo.mp4` is the local video; the YouTube link above is the convenient viewing link.
-# ITR-IK-MJ
-This repository is starter code for ITR Assignment
