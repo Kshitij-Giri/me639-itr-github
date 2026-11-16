@@ -10,6 +10,22 @@ Everything runs on ROS 2 Humble with Python 3.10. Path processing needs only num
 
 ---
 
+## Team
+
+| Name | Roll No |
+|---|---|
+| Kshitij Giri | 23110177 |
+| Parshva Patel | 24110240 |
+| Kush Mehta | 24110177 |
+
+---
+
+## Demonstration Video
+
+Youtube Link: 
+
+---
+
 ## 1. Repository layout
 
 ```
@@ -31,6 +47,7 @@ Heal_Buzzwire_Task3/
 │   ├── wire_path_20261115_095857.csv / _meta.json   # part 3
 │   ├── wire_path_stitched.csv / _meta.json          # parts 1-3 joined
 │   └── wire_path_prepared.csv / _meta.json          # final replay path (input to heal_ik_replay.py)
+├── demo-videos/                # original demonstration videos with compiled demo video
 ├── docs/
 │   ├── wire_path_prepared.png  # path coloured by speed, zooms, speed + ring-rotation profiles
 │   ├── tube_compare.png        # smoothing tube 3 / 5 / 8 mm comparison
