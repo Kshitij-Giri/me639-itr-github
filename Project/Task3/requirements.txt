@@ -1,0 +1,3 @@
+numpy>=1.21
+matplotlib>=3.5
+# ROS 2 Humble (apt / already on lab PC): rclpy, PyKDL, urdf_parser_py, kdl_parser_py

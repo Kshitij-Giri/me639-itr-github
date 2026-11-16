@@ -1,0 +1,25 @@
+{
+  "created": "20261115_095857",
+  "base_link": "base_link",
+  "tip_link": "rq_tool_tip",
+  "joint_names": [
+    "joint1",
+    "joint2",
+    "joint3",
+    "joint4",
+    "joint5",
+    "joint6"
+  ],
+  "tcp_offset_in_tip": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "wire_yaw_deg": -179.9969039760719,
+  "flags": {
+    "0": "sample",
+    "1": "keyframe",
+    "2": "contact"
+  },
+  "units": "m, rad; quaternion x,y,z,w; poses in base_link"
+}

@@ -1,0 +1,45 @@
+{
+  "created": "20261115_093151",
+  "base_link": "base_link",
+  "tip_link": "rq_tool_tip",
+  "joint_names": [
+    "joint1",
+    "joint2",
+    "joint3",
+    "joint4",
+    "joint5",
+    "joint6"
+  ],
+  "tcp_offset_in_tip": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "wire_yaw_deg": 180.0,
+  "flags": {
+    "0": "sample",
+    "1": "keyframe",
+    "2": "contact",
+    "3": "join (start of a later part)"
+  },
+  "units": "m, rad; quaternion x,y,z,w; poses in base_link",
+  "stitched_from": [
+    "wire_path_20261115_093151.csv",
+    "wire_path_20261115_094705.csv",
+    "wire_path_20261115_095857.csv"
+  ],
+  "joins": [
+    {
+      "join": 1,
+      "gap_mm": 0.35,
+      "gap_deg": 0.05,
+      "ok": true
+    },
+    {
+      "join": 2,
+      "gap_mm": 0.54,
+      "gap_deg": 0.1,
+      "ok": true
+    }
+  ]
+}
