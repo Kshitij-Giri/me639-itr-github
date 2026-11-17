@@ -22,7 +22,7 @@ Everything runs on ROS 2 Humble with Python 3.10. Path processing needs only num
 
 ## Demonstration Video
 
-Youtube Link: 
+Youtube Link: https://youtu.be/AvTJjvzQCAw
 
 ---
 
